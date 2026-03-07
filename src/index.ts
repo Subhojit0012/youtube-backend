@@ -5,21 +5,21 @@ import { connectDB } from "./db/connect.db.js";
 import type { Express } from "express";
 import { appRouter } from "./router/_app.router.js";
 import { createContext } from "./utility/context.utility.js";
-import sessionRouter from "./utility/session.js";
-import { initRedisClient } from "./utility/session.js";
+// import sessionRouter from "./router/session.route.js";
+// import { initRedisClient, exitRedisConnect, activeSession } from "./utility/session.js";
 import {
   createDefaultLogger,
   createRequestLogger,
 } from "./utility/log.utility.js";
 
 export const app: Express = express();
+
 const logger = createDefaultLogger().child({ service: "trpc-backend" });
 
 app.use(createRequestLogger(logger));
 app.use("/express", express.urlencoded({ extended: true }));
 app.use("/express", express.json());
-
-app.use("/express/test", sessionRouter);
+// app.use("/express/test", activeSession);
 
 app.use(
   "/trpc",
@@ -29,10 +29,11 @@ app.use(
   }),
 );
 
+// server bootstrap
 (async function () {
   try {
     logger.info("starting server bootstrap");
-    initRedisClient();
+    // await initRedisClient();
     connectDB().then(() =>
       app.listen(2026, () => {
         logger.info("server running", { port: 2026 });
@@ -45,6 +46,9 @@ app.use(
   }
 })();
 
+// app.use("/express/test", sessionRouter);
+
 process.on("exit", (code) => {
+  // exitRedisConnect();
   logger.warn("process exit", { code });
 });
