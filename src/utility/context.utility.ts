@@ -1,13 +1,9 @@
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { initTRPC } from "@trpc/server";
-import { ota } from "zod/v4/locales";
-import { read } from "node:fs";
 import { decodeToken } from "./token.utility.js";
+import type { JwtPayload } from "jsonwebtoken";
 
-interface ContextOption {
-  req: trpcExpress.CreateExpressContextOptions["req"];
-  res: trpcExpress.CreateExpressContextOptions["res"];
-  info?: trpcExpress.CreateExpressContextOptions["info"];
+export interface ContextOption extends Partial<trpcExpress.CreateExpressContextOptions> {
   user?: object | string | null;
 }
 
@@ -35,12 +31,14 @@ export const procedure = t.procedure;
 export const mergeRouters = t.mergeRouters;
 
 interface CreateInnerContextOptions extends Partial<trpcExpress.CreateExpressContextOptions> {
-  session: object | null;
+  session?: object | null;
+  token?: string | JwtPayload
 }
 
 function createInnerContext(opts: CreateInnerContextOptions) {
   return {
     session: opts.session,
+    token: opts.token,
     id: 1,
   };
 }
