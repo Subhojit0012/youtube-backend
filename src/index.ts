@@ -5,22 +5,34 @@ import { connectDB } from "./db/connect.db.js";
 import type { Express } from "express";
 import { appRouter } from "./router/_app.router.js";
 import { createContext } from "./utility/context.utility.js";
-// import sessionRouter from "./router/session.route.js";
-// import { initRedisClient, exitRedisConnect, activeSession } from "./utility/session.js";
 import {
   createDefaultLogger,
   createRequestLogger,
 } from "./utility/log.utility.js";
+import session from "express-session";
+import { redisStore } from "./utility/session.js";
+
 
 export const app: Express = express();
 
 const logger = createDefaultLogger().child({ service: "trpc-backend" });
 
 app.use(createRequestLogger(logger));
-app.use("/express", express.urlencoded({ extended: true }));
 app.use("/express", express.json());
-// app.use("/express/test", activeSession);
+app.use("/express", express.urlencoded({ extended: true }));
+app.use(session({
+  store: redisStore,
+  secret: process.env.SESSION_SECRET || "secret",
+  resave: false,
+  cookie: {
+    httpOnly: true,
+    secure: true,
+    maxAge: 60 * 60 * 24
+  }
+}))
 
+
+// rpc route
 app.use(
   "/trpc",
   trpcExpress.createExpressMiddleware({
@@ -46,9 +58,7 @@ app.use(
   }
 })();
 
-// app.use("/express/test", sessionRouter);
-
+// exit code
 process.on("exit", (code) => {
-  // exitRedisConnect();
   logger.warn("process exit", { code });
 });
