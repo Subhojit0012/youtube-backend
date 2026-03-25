@@ -9,28 +9,12 @@ import {
   createDefaultLogger,
   createRequestLogger,
 } from "./utility/log.utility.js";
-import session from "express-session";
-import { redisStore } from "./utility/session.js";
-
 
 export const app: Express = express();
 
 const logger = createDefaultLogger().child({ service: "trpc-backend" });
 
 app.use(createRequestLogger(logger));
-app.use("/express", express.json());
-app.use("/express", express.urlencoded({ extended: true }));
-app.use(session({
-  store: redisStore,
-  secret: process.env.SESSION_SECRET || "secret",
-  resave: false,
-  cookie: {
-    httpOnly: true,
-    secure: true,
-    maxAge: 60 * 60 * 24
-  }
-}))
-
 
 // rpc route
 app.use(
