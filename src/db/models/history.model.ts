@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 export const historySchema = new Schema(
   {
-    videoId: { type: Schema.Types.ObjectId, required: true, ref: "Video" },
+    videoId: [{ type: Schema.Types.ObjectId, required: true, ref: "Video" }],
     userId: { type: Schema.Types.ObjectId, required: true, ref: "User" },
   },
   { timestamps: true },
