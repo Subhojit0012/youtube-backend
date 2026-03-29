@@ -12,8 +12,7 @@ export const videoSchema = new Schema(
         count: { type: Number, default: 0 },
         enabled: { type: Boolean, default: true },
         userComments: [
-          { type: Schema.Types.ObjectId, ref: "Comment" },
-          { default: [] },
+          { type: Schema.Types.ObjectId, ref: "Comment", default: [] },
         ],
       },
 
