@@ -3,6 +3,7 @@ import { router } from "../utility/context.utility.js";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Video } from "../db/models/video.model.js";
+import { createVideoModel, getVideoById } from "../service/video.service.js";
 
 const videoRouter = router({
   uploadVideo: procedure
@@ -15,50 +16,27 @@ const videoRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const { title, description, videoFile, thumbnail } = input;
+      try {
+        const userId =
+          typeof ctx.payload === "object" ? ctx.payload?._id : null;
 
-      const userId = typeof ctx.payload === "object" ? ctx.payload?._id : null;
+        // create video model and save to database
+        createVideoModel(input, userId);
 
-      if (!userId) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You are not authorized to upload video",
-        });
+        return {
+          message: "Video uploaded successfully",
+        };
+      } catch (error) {
+        throw error instanceof TRPCError ? error : "Failed to upload video";
       }
-
-      const video = await Video.create({
-        title,
-        description,
-        videoFile,
-        thumbnail,
-        owner: userId,
-      });
-
-      if (!video) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to upload video",
-        });
-      }
-
-      return {
-        message: "Video uploaded successfully",
-      };
     }),
-    getVideoById: procedure.input(z.string()).query(async ({input})=>{
-        const id = input;
+  getVideoById: procedure.input(z.string()).query(async ({ input }) => {
+    const value = await getVideoById(input);
 
-        const video = await Video.findById(id);
+    if (value instanceof TRPCError) throw value;
 
-        if(!video){
-            throw new TRPCError({
-                code: "NOT_FOUND",
-                message: "Video not found"
-            })
-        }
-
-        return video;
-    }),
+    return value;
+  }),
 });
 
 export default videoRouter;
