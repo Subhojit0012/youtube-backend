@@ -12,6 +12,7 @@ export const createContext = ({
   res,
 }: trpcExpress.CreateExpressContextOptions): ContextOption => {
   const auth: string = req.headers.authorization?.split(" ")[1]?.toString() || "";
+  // remove the decode func and add it to auth procedure
   const decode = decodeToken(auth);
 
   if (decode) {
