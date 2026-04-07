@@ -5,6 +5,10 @@ export const subscribe = new Schema(
   {
     subscriber: { type: Schema.Types.ObjectId, ref: "User", required: true },
     subscribedTo: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    count: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true },
 );

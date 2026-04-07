@@ -27,7 +27,7 @@ export const user = new Schema(
     playlist: [{ type: Schema.Types.ObjectId, ref: "Playlist" }],
     videos: [{ type: Schema.Types.ObjectId, ref: "Video" }],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const User = mongoose.model("User", user);
