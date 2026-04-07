@@ -45,3 +45,9 @@ export async function getVideoById(id: string) {
     });
   }
 }
+
+export async function getAllVideosOfUser(userId: string) {
+  const videos = await Video.findById({ owner: userId });
+}
+export async function getAllVideos() {}
+export async function deleteVideoById(videoId: string, userId?: string) {}
