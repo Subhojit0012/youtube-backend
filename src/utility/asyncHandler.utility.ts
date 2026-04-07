@@ -1,5 +1,5 @@
-async function asyncHandler(fn: Promise<void>) {
-  return Promise.resolve(fn).catch((err) => err);
+async function asyncHandler(fn: (...args: any[]) => Promise<void>) {
+  return Promise.resolve(fn).catch((err) => {throw err});
 }
 
 export default asyncHandler;

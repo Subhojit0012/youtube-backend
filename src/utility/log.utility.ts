@@ -59,9 +59,7 @@ class PrettyLogFormatter implements LogFormatter {
 
 // sink class
 class ConsoleSink implements LogSink {
-  constructor(private readonly formatter: LogFormatter) {
-
-  }
+  constructor(private readonly formatter: LogFormatter) {}
 
   write(entry: LogEntry): void {
     const payload = this.formatter.format(entry);
@@ -163,9 +161,18 @@ export function createRequestLogger(logger: ILogger) {
       const endedAt = process.hrtime.bigint();
       const latencyMs = Number(endedAt - startedAt) / 1000000;
       const level: LogLevel =
-        res.statusCode >= 500 ? "error" : res.statusCode >= 400 ? "warn" : "info";
+        res.statusCode >= 500
+          ? "error"
+          : res.statusCode >= 400
+            ? "warn"
+            : "info";
 
-      const message = format("%s %s -> %d", req.method, req.originalUrl, res.statusCode);
+      const message = format(
+        "%s %s -> %d",
+        req.method,
+        req.originalUrl,
+        res.statusCode,
+      );
 
       logger[level](message, {
         method: req.method,
@@ -183,12 +190,15 @@ export function createRequestLogger(logger: ILogger) {
 
 export function createDefaultLogger(): ILogger {
   const minLevel =
-    process.env.LOG_LEVEL && LOG_LEVELS.includes(process.env.LOG_LEVEL as LogLevel)
+    process.env.LOG_LEVEL &&
+    LOG_LEVELS.includes(process.env.LOG_LEVEL as LogLevel)
       ? (process.env.LOG_LEVEL as LogLevel)
       : "info";
 
   const formatter: LogFormatter =
-    process.env.LOG_FORMAT === "json" ? new JsonLogFormatter() : new PrettyLogFormatter();
+    process.env.LOG_FORMAT === "json"
+      ? new JsonLogFormatter()
+      : new PrettyLogFormatter();
 
   return new Logger({
     minLevel,
