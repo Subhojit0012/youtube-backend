@@ -88,6 +88,7 @@ Root router file: `src/router/_app.router.ts`
 All procedures are defined with Zod validation.
 
 1. `signup` (mutation)
+
 - Input:
   - `name: string`
   - `email: string`
@@ -100,6 +101,7 @@ All procedures are defined with Zod validation.
   - `{ ctx: user }`
 
 2. `login` (mutation)
+
 - Input:
   - `email: string`
   - `password: string`
@@ -109,6 +111,7 @@ All procedures are defined with Zod validation.
   - `{ message: "Login successful" }`
 
 3. `update` (mutation)
+
 - Input:
   - optional `name`, `email`, `password`
 - Behavior:
@@ -118,6 +121,7 @@ All procedures are defined with Zod validation.
   - `{ ctx: updatedUser }` where `updatedUser` is Mongo update result
 
 4. `getUserById` (query)
+
 - Input:
   - `string` (user id)
 - Behavior:
@@ -126,6 +130,7 @@ All procedures are defined with Zod validation.
   - `{ ctx: user }`
 
 5. `param` (query)
+
 - Input:
   - `string`
 - Behavior:
@@ -145,6 +150,7 @@ File: `src/db/connect.db.ts`
 ### 5.2 Mongoose Models
 
 1. `User`
+
 - fields:
   - `name` (required)
   - `email` (required)
@@ -160,6 +166,7 @@ File: `src/db/connect.db.ts`
 - `timestamps: true`
 
 2. `Video`
+
 - nested `meta` object:
   - `likes` count
   - `comments`:
@@ -172,6 +179,7 @@ File: `src/db/connect.db.ts`
 - `timestamps: true`
 
 3. `Channel`
+
 - `name`, `description`, `owner` (required)
 - arrays:
   - `subscribers[]` -> `User`
@@ -180,33 +188,39 @@ File: `src/db/connect.db.ts`
 - `timestamps: true`
 
 4. `Comment`
+
 - `videoId` -> `Video` (required)
 - `userId` -> `User` (required)
 - `content` (required)
 - `timestamps: true`
 
 5. `Like`
+
 - `userId` -> `User` (required)
 - `videoId` -> `Video` (required)
 - `timestamps: true`
 
 6. `History`
+
 - `videoId` -> `Video` (required)
 - `userId` -> `User` (required)
 - `timestamps: true`
 
 7. `Playlist`
+
 - `name` (required)
 - `contents[]` -> `Video`
 - `timestamps: true`
 
 8. `Session` (Mongo model)
+
 - `userId` -> `User` (required)
 - `createdAt` default `Date.now`, TTL `expires: "7d"`
 - `updatedAt` default `Date.now`
 - instance method `touch()` updates `updatedAt`
 
 9. `Subscribe`
+
 - `subscriber` -> `User` (required)
 - `subscribedTo` -> `User` (required)
 - `timestamps: true`
@@ -274,14 +288,17 @@ Used in `src/index.ts`:
 ## 9. Other Utility Files
 
 1. `asyncHandler.utility.ts`
+
 - wraps a promise and catches errors
 - currently unused in routing flow
 
 2. `error.utility.ts`
+
 - creates a sample `TRPCError` and maps it to HTTP status
 - currently not integrated into API error handling
 
 3. `src/test/test.ts`
+
 - helper to build Redis-style key names (`bites:<...>`)
 
 ## 10. Environment Variables
