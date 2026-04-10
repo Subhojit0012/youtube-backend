@@ -67,6 +67,27 @@ async function login(input: { email: string; password: string }) {
 
 async function deleteUser(params: object) {}
 
-async function updateUser(params: object) {}
+async function updateUser({name, email, password}: {name?: string, email?: string, password?: string}) {
+      let updatedUser;
 
-export { createUser, login };
+      if (name && email) {
+        updatedUser = await User.updateOne(
+          { email: email },
+          { $set: { name: name } },
+        );
+      }
+
+      if (password && email) {
+        updatedUser = await User.updateOne(
+          { email: email },
+          { $set: { password: password } },
+        );
+      }
+
+      return {
+        ctx: updatedUser,
+      };
+
+}
+
+export { createUser, login, updateUser};
