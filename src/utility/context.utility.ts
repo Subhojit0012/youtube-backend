@@ -4,8 +4,8 @@ import { decodeToken, encodeToken } from "./token.utility.js";
 import type { JwtPayload } from "jsonwebtoken";
 
 export interface ContextOption extends Partial<trpcExpress.CreateExpressContextOptions> {
-  token?: string | null;
-  payload?: string | JwtPayload | null;
+  token?: string;
+  payload?: JwtPayload;
 }
 
 export const createContext = ({
@@ -30,12 +30,8 @@ export const router = t.router;
 export const procedure = t.procedure;
 export const mergeRouters = t.mergeRouters;
 
-/**
- * protected procedure
- */
-
-// removing *typeof procedure* will trow reference error because of @types/qs package so type annontaion is necessary
-export const authProcedure: typeof procedure = procedure.use((opts) => {
+// type **error**
+export const authProcedure: ReturnType<typeof procedure.use> = procedure.use((opts) => {
   const { ctx, next } = opts;
 
   const token = ctx.token ? ctx.token : "";
@@ -49,3 +45,4 @@ export const authProcedure: typeof procedure = procedure.use((opts) => {
     },
   });
 });
+
