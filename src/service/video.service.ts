@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { Video } from "../db/models/video.model.js";
 
-export function createVideoModel(input: object, userId?: string) {
+export async function createVideoModel(input: object, userId?: string) {
   const { title, description, videoFile, thumbnail } = input as {
     title: string;
     description: string;
@@ -11,12 +11,12 @@ export function createVideoModel(input: object, userId?: string) {
 
   const id = userId ? userId : undefined;
 
-  const video = new Video({
+  const video = await Video.create({
     title,
     description,
     videoFile,
     thumbnail,
-    owner: id,
+    // owner property is having issue
   });
 
   if (!video) {
@@ -25,8 +25,6 @@ export function createVideoModel(input: object, userId?: string) {
       message: "Failed to create video model",
     });
   }
-
-  return video;
 }
 
 export async function getVideoById(id: string) {

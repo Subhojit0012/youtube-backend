@@ -2,7 +2,6 @@ import { procedure } from "../utility/context.utility.js";
 import { router } from "../utility/context.utility.js";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { Video } from "../db/models/video.model.js";
 import { createVideoModel, getVideoById } from "../service/video.service.js";
 
 const videoRouter = router({
