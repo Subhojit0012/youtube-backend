@@ -3,14 +3,17 @@ import { router, procedure } from "./../utility/context.utility.js";
 import { TRPCError } from "@trpc/server";
 import { string, z } from "zod";
 import { createUser, login, updateUser } from "../service/user.service.js";
-
+import jwt from "jsonwebtoken";
 
 export const userRouter = router({
   // /signup route
   signup: procedure
     .input(z.object({ name: string(), email: string(), password: string() }))
-    .mutation(async ({ input }) => {
-      await createUser(input)
+    .mutation(async ({ input, ctx }) => {
+      const id = await createUser(input);
+
+      // Generate JWT token and set it in the response header
+      ctx.res?.setHeader("Authorization", "Bearer " + jwt.sign({id: id}, process.env.JWT_SECRET!, { expiresIn: "1D"}))
     }),
 
   //login
@@ -18,7 +21,7 @@ export const userRouter = router({
   login: procedure
     .input(z.object({ email: string(), password: string() }))
     .mutation(async ({ input }) => {
-      await login(input)
+      await login(input);
     }),
   // /deleteUser route
   // updateUser route
@@ -31,7 +34,7 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ input }) => {
-      await updateUser(input)
+      await updateUser(input);
     }),
   // /getUserById route
 
