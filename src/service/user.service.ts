@@ -36,9 +36,7 @@ async function createUser({
       cause: "Database issue",
     });
 
-  return {
-    ctx: user,
-  };
+  return user._id;
 }
 
 async function login(input: { email: string; password: string }) {
@@ -65,29 +63,52 @@ async function login(input: { email: string; password: string }) {
   return { message: "Login successful" };
 }
 
-async function deleteUser(params: object) {}
+async function deleteUser(input: { userId: string }) {
+  const { userId } = input;
 
-async function updateUser({name, email, password}: {name?: string, email?: string, password?: string}) {
-      let updatedUser;
+  const user = await User.findByIdAndDelete(userId);
 
-      if (name && email) {
-        updatedUser = await User.updateOne(
-          { email: email },
-          { $set: { name: name } },
-        );
-      }
+  if (!user) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "User not found",
+      cause: "Invalid user ID",
+    });
+  }
 
-      if (password && email) {
-        updatedUser = await User.updateOne(
-          { email: email },
-          { $set: { password: password } },
-        );
-      }
-
-      return {
-        ctx: updatedUser,
-      };
-
+  return {
+    message: "User deleted successfully",
+  };
 }
 
-export { createUser, login, updateUser};
+async function updateUser({
+  name,
+  email,
+  password,
+}: {
+  name?: string;
+  email?: string;
+  password?: string;
+}) {
+  let updatedUser;
+
+  if (name && email) {
+    updatedUser = await User.updateOne(
+      { email: email },
+      { $set: { name: name } },
+    );
+  }
+
+  if (password && email) {
+    updatedUser = await User.updateOne(
+      { email: email },
+      { $set: { password: password } },
+    );
+  }
+
+  return {
+    ctx: updatedUser,
+  };
+}
+
+export { createUser, login, updateUser, deleteUser };
