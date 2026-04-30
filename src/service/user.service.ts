@@ -52,6 +52,7 @@ async function login(input: { email: string; password: string }) {
 
   const user = await User.findOne({ email: email, password: password });
 
+
   if (!user) {
     throw new TRPCError({
       code: "NOT_FOUND",
@@ -60,7 +61,7 @@ async function login(input: { email: string; password: string }) {
     });
   }
 
-  return { message: "Login successful" };
+  return user._id;
 }
 
 async function deleteUser(input: { userId: string }) {
