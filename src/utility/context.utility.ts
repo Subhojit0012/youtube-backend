@@ -30,13 +30,15 @@ export const router = t.router;
 export const procedure = t.procedure;
 export const mergeRouters = t.mergeRouters;
 
-// type **error**
-export const authProcedure: ReturnType<typeof procedure.use> = procedure.use((opts) => {
+export const authProcedure = procedure.use((opts) => {
   const { ctx, next } = opts;
 
   const token = ctx.token ? ctx.token : "";
 
   const decoded = decodeToken(token);
+
+  if (decoded === null)
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid token" });
 
   return next({
     ctx: {
@@ -45,4 +47,3 @@ export const authProcedure: ReturnType<typeof procedure.use> = procedure.use((op
     },
   });
 });
-
