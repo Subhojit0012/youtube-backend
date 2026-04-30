@@ -22,13 +22,9 @@ export function encodeToken(userId: string) {
 }
 
 export function decodeToken(token: string) {
-  try {
-    if (token === "") {
-      throw new Error("No token provided");
-    }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-    return decoded;
-  } catch (error) {
-    throw new Error("Invalid token");
+  if (token === "") {
+    throw new Error("No token provided");
   }
+  const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+  return decoded ? decoded : null;
 }
