@@ -1,6 +1,4 @@
-import type { JwtPayload } from "jsonwebtoken";
 import { Playlist } from "../db/models/playlist.model.js";
-import type { mongo, ObjectId } from "mongoose";
 import mongoose from "mongoose";
 
 interface CreatePlaylistOpts {
@@ -38,4 +36,17 @@ async function checkUserPlaylist(userId: mongoose.Types.ObjectId) {
   if (playlist) return playlist;
 
   return false;
+}
+
+async function deletePlaylist(opts: CreatePlaylistOpts) {
+  // delete the playlist Id
+  const {input, ctx} = opts
+  
+  const playlist = await Playlist.findByIdAndDelete(input.playListId);
+
+  if(!playlist) throw new Error("PLAYLIST NOT FOUND");
+
+  if(playlist.owner.toString() !== ctx.payload?.id.toString()) throw new Error("UNAUTHORIZED");
+
+  return {message: "Playlist deleted successfully"};
 }
