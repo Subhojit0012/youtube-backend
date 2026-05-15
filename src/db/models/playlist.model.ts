@@ -64,13 +64,13 @@ export const playlist = new Schema(
       },
     },
     statics: {
-      async createPlaylist(name: string, owner: mongoose.Types.ObjectId) {
-        if (this.name === name && this.owner.toString() === owner.toString()) {
+      async createPlaylist(name: string, user: mongoose.Types.ObjectId) {
+        if (this.name === name && this.owner.toString() === user.toString()) {
           throw new Error("PLAYLIST ALREADY EXISTS");
         }
         await this.create({
           name,
-          owner,
+          owner: user,
         });
       },
     },
