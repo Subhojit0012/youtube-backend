@@ -1,17 +1,17 @@
 import mongoose, { Model } from "mongoose";
 import { Schema } from "mongoose";
 
-interface IPlaylist {
+export interface IPlaylist {
   name: string;
   contents: mongoose.Types.ObjectId[];
   owner: mongoose.Types.ObjectId;
 }
 
-interface PlaylistModelType extends Model<IPlaylist> {
+export interface PlaylistModelType extends Model<IPlaylist> {
   createPlaylist(name: string, owner: mongoose.Types.ObjectId): Promise<void>;
 }
 
-interface PlaylistMethods {
+export interface PlaylistMethods {
   addToPlaylist(
     userId: mongoose.Types.ObjectId,
     videoId: mongoose.Types.ObjectId,
@@ -21,8 +21,6 @@ interface PlaylistMethods {
     videoId: mongoose.Types.ObjectId,
   ): void;
 }
-
-
 
 export const playlist = new Schema(
   {
