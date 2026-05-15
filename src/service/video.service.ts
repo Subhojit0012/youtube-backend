@@ -56,7 +56,7 @@ export async function getAllVideosOfUser(userId: string) {
 
   return videos;
 }
-export async function getAllVideos() {}
+export async function getAllVideos(){}
 
 export async function deleteVideoById(videoId: string, userId?: string) {
   if (!videoId)
