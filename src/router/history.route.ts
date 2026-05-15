@@ -12,7 +12,7 @@ const historyRouter = router({
         const { videoId } = input;
         const userId =
             typeof ctx.payload === "object" && ctx.payload !== null
-                ? (ctx.payload as any).id
+                ? (ctx.payload as {id: string}).id
                 : undefined;
         if (!userId) {
             throw new Error("UNAUTHORIZED");
