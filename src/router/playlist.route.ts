@@ -48,7 +48,7 @@ const playListRouter = router({
             throw new Error("UNAUTHORIZED");
         }
 
-        playlist.contents.push({videoId});
+        playlist.contents.push(videoId as any);
         await playlist.save();
 
         return playlist;
