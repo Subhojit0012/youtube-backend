@@ -17,6 +17,8 @@ export async function createVideoModel(input: object, userId?: string) {
     videoFile,
     thumbnail,
     // owner property is having issue
+    meta: {},
+    owner: id as any,
   });
 
   if (!video) {
@@ -75,7 +77,7 @@ export async function deleteVideoById(videoId: string, userId?: string) {
       });
     }
 
-    if (userId && video.owner.toString() !== userId) {
+    if (userId && video.owner?.toString() !== userId) {
       throw new TRPCError({
         code: "FORBIDDEN",
         message: "You do not have permission to delete this video",
