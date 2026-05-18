@@ -12,7 +12,7 @@ async function historyService(userId: string, videoId: string) {
   if (video) {
     // update the timestamps
   } else {
-    history?.videoId.push(videoId);
+    history?.videoId.push(videoId as any);
     await history?.save();
   }
 };
