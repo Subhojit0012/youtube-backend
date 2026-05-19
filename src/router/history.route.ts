@@ -1,7 +1,7 @@
 import { authProcedure } from "../utility/context.utility.js";
 import { router } from "../utility/context.utility.js";
 import z from "zod";
-import { historyService, getHistory} from "../service/history.service.js";
+import { getHistory, addToHistory} from "../service/history.service.js";
 
 const historyRouter = router({
     addToHistory: authProcedure.input(
@@ -17,8 +17,9 @@ const historyRouter = router({
         if (!userId) {
             throw new Error("UNAUTHORIZED");
         }
-        await historyService(userId, videoId);
-        return { message: "Video added to history" };
+        await addToHistory(userId, videoId);
+
+        return {message: "Video added to history"};
     }),
 
     getHistory: authProcedure.query(async ({ ctx }) => {
@@ -29,7 +30,10 @@ const historyRouter = router({
         if (!userId) {
             throw new Error("UNAUTHORIZED");
         }
-        return await getHistory(userId);
+       
+        const history = await getHistory(userId);
+
+        return {history};
     }),
 });
 
