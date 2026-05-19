@@ -14,6 +14,35 @@ async function historyService(userId: string, videoId: string) {
   }
 };
 
+export async function addToHistory(userId: string, videoId: string) {
+  const existingHistory = await History.findOne({ userId });
+
+  if (!existingHistory) {
+    // If no history exists for this user, create a new one
+    const newHistory = new History({
+      userId,
+      videoId: [videoId],
+    });
+    await newHistory.save();
+    return;
+  }
+
+  // Check if the video is already in the history
+  const videoIndex = existingHistory.videoId.findIndex((id) => id.toString() === videoId);
+
+  if (videoIndex !== -1) {
+    // If video exists, move it to the front (most recent)
+    const [video] = existingHistory.videoId.splice(videoIndex, 1);
+    existingHistory.videoId.unshift(video as any);
+  } else {
+    // If video doesn't exist, add it to the front
+    existingHistory.videoId.unshift(videoId as any);
+  }
+
+  // Save the updated history
+  await existingHistory.save();
+}
+
 async function getHistory(userId: string){
   const history = await History.findOne({ userId }).populate({
     path: "videoId",
