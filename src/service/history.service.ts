@@ -17,4 +17,21 @@ async function historyService(userId: string, videoId: string) {
   }
 };
 
-export default historyService;
+async function getHistory(userId: string){
+  const history = await History.findOne({ userId }).populate({
+    path: "videoId",
+    select: "title thumbnail duration owner",
+    populate: {
+      path: "owner",
+      select: "name avatar",
+    },
+  });
+
+  if (!history) {
+    return [];
+  }
+
+  return history.videoId;
+}
+
+export {historyService, getHistory};
