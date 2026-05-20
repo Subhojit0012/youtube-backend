@@ -1,24 +1,24 @@
-import mongoose, { Model } from "mongoose";
+import mongoose, { Model, Types } from "mongoose";
 import { Schema } from "mongoose";
 
 export interface IPlaylist {
   name: string;
-  contents: mongoose.Types.ObjectId[];
-  owner: mongoose.Types.ObjectId;
+  contents: Types.ObjectId[];
+  owner: Types.ObjectId;
 }
 
 export interface PlaylistModelType extends Model<IPlaylist> {
-  createPlaylist(name: string, owner: mongoose.Types.ObjectId): Promise<void>;
+  createPlaylist(name: string, owner: Types.ObjectId): Promise<void>;
 }
 
 export interface PlaylistMethods {
   addToPlaylist(
-    userId: mongoose.Types.ObjectId,
-    videoId: mongoose.Types.ObjectId,
+    userId: Types.ObjectId,
+    videoId: Types.ObjectId,
   ): Promise<void>;
   removeFromPlaylist(
-    userId: mongoose.Types.ObjectId,
-    videoId: mongoose.Types.ObjectId,
+    userId: Types.ObjectId,
+    videoId: Types.ObjectId,
   ): void;
 }
 
@@ -31,8 +31,8 @@ export const playlist = new Schema(
   {
     methods: {
       async addToPlaylist(
-        userId: mongoose.Types.ObjectId,
-        videoId: mongoose.Types.ObjectId,
+        userId: Types.ObjectId,
+        videoId: Types.ObjectId,
       ) {
         if (!videoId && !userId)
           return new Error("VIDEO ID AND USER ID ARE REQUIRED");
@@ -45,8 +45,8 @@ export const playlist = new Schema(
         await this.save();
       },
       removeFromPlaylist(
-        userId: mongoose.Types.ObjectId,
-        videoId: mongoose.Types.ObjectId,
+        userId: Types.ObjectId,
+        videoId: Types.ObjectId,
       ) {
         if (!videoId && !userId)
           return new Error("VIDEO ID AND USER ID ARE REQUIRED");
@@ -56,13 +56,13 @@ export const playlist = new Schema(
         }
 
         this.contents = this.contents?.filter(
-          (item: mongoose.Types.ObjectId) =>
+          (item: Types.ObjectId) =>
             item.toString() !== videoId?.toString(),
         );
       },
     },
     statics: {
-      async createPlaylist(name: string, user: mongoose.Types.ObjectId) {
+      async createPlaylist(name: string, user: Types.ObjectId) {
         if (this.name === name && this.owner.toString() === user.toString()) {
           throw new Error("PLAYLIST ALREADY EXISTS");
         }
