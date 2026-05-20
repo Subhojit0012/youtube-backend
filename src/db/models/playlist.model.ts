@@ -1,26 +1,26 @@
 import mongoose, { Model, Types } from "mongoose";
 import { Schema } from "mongoose";
 
-export interface IPlaylist {
-  name: string;
-  contents: Types.ObjectId[];
-  owner: Types.ObjectId;
-}
+// export interface IPlaylist {
+//   name: string;
+//   contents: Types.ObjectId[];
+//   owner: Types.ObjectId;
+// }
 
-export interface PlaylistModelType extends Model<IPlaylist> {
-  createPlaylist(name: string, owner: Types.ObjectId): Promise<void>;
-}
+// export interface PlaylistModelType extends Model<IPlaylist> {
+//   createPlaylist(name: string, owner: Types.ObjectId): Promise<void>;
+// }
 
-export interface PlaylistMethods {
-  addToPlaylist(
-    userId: Types.ObjectId,
-    videoId: Types.ObjectId,
-  ): Promise<void>;
-  removeFromPlaylist(
-    userId: Types.ObjectId,
-    videoId: Types.ObjectId,
-  ): void;
-}
+// export interface PlaylistMethods {
+//   addToPlaylist(
+//     userId: Types.ObjectId,
+//     videoId: Types.ObjectId,
+//   ): Promise<void>;
+//   removeFromPlaylist(
+//     userId: Types.ObjectId,
+//     videoId: Types.ObjectId,
+//   ): void;
+// }
 
 export const playlist = new Schema(
   {
@@ -76,17 +76,15 @@ export const playlist = new Schema(
   },
 );
 
-type PlaylistModel = Model<
-  IPlaylist,
-  {},
-  Pick<PlaylistMethods, "addToPlaylist">,
-  Pick<PlaylistMethods, "removeFromPlaylist">
-> &
-  Pick<PlaylistModelType, "createPlaylist">;
+// type PlaylistModel = Model<
+//   IPlaylist,
+//   {},
+//   Pick<PlaylistMethods, "addToPlaylist">,
+//   Pick<PlaylistMethods, "removeFromPlaylist">
+// > &
+//   Pick<PlaylistModelType, "createPlaylist">;
 
-
-
-export const Playlist = mongoose.model<IPlaylist, PlaylistModel>(
+export const Playlist = mongoose.model(
   "Playlist",
   playlist,
 );
