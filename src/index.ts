@@ -27,19 +27,17 @@ app.use(
 
 // server bootstrap
 (async function () {
-  try {
     logger.info("starting server bootstrap");
     // await initRedisClient();
     connectDB().then(() =>
       app.listen(2026, () => {
         logger.info("server running", { port: 2026 });
       }),
-    );
-  } catch (error) {
-    logger.error("failed to start server", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
+    ).catch((err)=> {
+      logger.error("failed to start server", {
+        error: err instanceof Error ? err.message : String(err)
+      })
+    })
 })();
 
 // exit code
