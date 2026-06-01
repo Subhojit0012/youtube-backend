@@ -1,6 +1,7 @@
 import { createClient } from "redis";
 import type { RedisClientType, RedisArgument } from "redis";
 import crypto from "node:crypto";
+import type { FlowType } from "typescript";
 
 const client = createClient({
   url: process.env.REDIS_URL as string,
@@ -66,7 +67,7 @@ class TokenBucket {
     client: RedisClientType;
     refillRate: 1;
     refillInterval: 0.1;
-    capacity: 10
+    capacity: 10;
   }) {
     this.redisClient = options.client;
     this.capacity = options.capacity;
@@ -78,12 +79,12 @@ class TokenBucket {
       .update(TOKEN_BUCKET_SCRIPT)
       .digest("hex");
   }
-  private redisClient
-  private refillInterval
-  private capacity
-  private refillRate
-  _scriptLoaded
-  _scriptSha
+  private redisClient;
+  private refillInterval;
+  private capacity;
+  private refillRate;
+  private _scriptLoaded;
+  private _scriptSha;
 
   /**
    * Ensure the Lua script is loaded into Redis.
@@ -114,12 +115,12 @@ class TokenBucket {
   async allow(key: RedisArgument) {
     await this.ensureScriptLoaded();
 
-    const currentTime = Math.floor(Date.now() / 1000)
+    const currentTime = Math.floor(Date.now() / 1000);
 
-    let result:any;
-    
+    let result: any;
+
     try {
-        // Try EVALSHA first (faster if script is cached)
+      // Try EVALSHA first (faster if script is cached)
       result = await this.redisClient.evalSha(this._scriptSha, {
         keys: [key],
         arguments: [
@@ -130,7 +131,7 @@ class TokenBucket {
         ],
       });
     } catch (error) {
-        if (error.message && error.message.includes("NOSCRIPT")) {
+      if (error.message && error.message.includes("NOSCRIPT")) {
         // Script not in cache, use EVAL and reload
         result = await this.redisClient.eval(TOKEN_BUCKET_SCRIPT, {
           keys: [key],
@@ -150,8 +151,8 @@ class TokenBucket {
     const allowed = Boolean(result[0]);
     const remaining = Number(result[1]);
 
-    return {allowed, remaining}
+    return { allowed, remaining };
   }
 }
 
-export {TokenBucket, TOKEN_BUCKET_SCRIPT}
+export { TokenBucket, TOKEN_BUCKET_SCRIPT };
