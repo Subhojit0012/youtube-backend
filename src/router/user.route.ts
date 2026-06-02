@@ -77,8 +77,8 @@ export const userRouter = router({
       await updateUser(input);
     }),
   // /getUserById route
-
-  getUserById: authProcedure.input(string()).query(async ({ input, ctx }) => {
+  // rename it to profile
+  profile: authProcedure.input(string()).query(async ({ input, ctx }) => {
     if (
       ctx.payload === undefined ||
       typeof ctx.payload !== "object" ||
