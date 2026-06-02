@@ -5,7 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { createVideoModel, getVideoById } from "../service/video.service.js";
 
 const videoRouter = router({
-  uploadVideo: procedure
+  upload: procedure
     .input(
       z.object({
         title: z.string(),
