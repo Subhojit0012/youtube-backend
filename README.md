@@ -60,13 +60,29 @@ The server will start on the specified port (default is 5000). You can access th
 
 ## API Endpoints
 
-- `POST /api/auth/signup`: Register a new user
-- `POST /api/auth/login`: Authenticate a user and receive a JWT token
-- `POST /api/videos/upload`: Upload a new video (requires authentication)
-- `GET /api/videos`: Get a list of all videos
-- `GET /api/videos/:id`: Get details of a specific video
-- `DELETE /api/videos/:id`: Delete a specific video (requires authentication)
-- `PUT /api/videos/:id`: Update a specific video (requires authentication)
+### Authentication
+
+- `POST /trpc/signup`: Register a new user
+- `POST /trpc/login`: Log in a user
+- `POST /trpc/logout`: Log out a user
+- `GET /trpc/profile`: Get the authenticated user's information
+- `POST /trpc/update`: Update user information
+- `POST /trpc/delete`: Delete a user account
+
+### Video Management
+
+- `POST /trpc/upload`: Upload a new video
+- `GET /trpc/getVideosById`: Get a video by its ID
+
+### Playlist Management
+
+- `POST /trpc/createPlaylist`: Create a new playlist
+- `POST /trpc/addVideoToPlaylist`: Add a video to a playlist
+
+### History Management
+
+- `POST /trpc/addToHistory`: Add a video to the user's watch history
+- `GET /trpc/getHistory`: Get the user's watch history
 
 ## License
 
