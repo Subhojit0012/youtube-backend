@@ -1,7 +1,7 @@
 import { createClient } from "redis";
 import type { RedisClientType, RedisArgument } from "redis";
 import crypto from "node:crypto";
-import type { FlowType } from "typescript";
+import type { NextFunction, Request, Response } from "express";
 
 const client = createClient({
   url: process.env.REDIS_URL as string,
@@ -79,10 +79,10 @@ class TokenBucket {
       .update(TOKEN_BUCKET_SCRIPT)
       .digest("hex");
   }
-  private redisClient;
-  private refillInterval;
-  private capacity;
-  private refillRate;
+  redisClient;
+  refillInterval;
+  capacity;
+  refillRate;
   private _scriptLoaded;
   private _scriptSha;
 
@@ -156,3 +156,31 @@ class TokenBucket {
 }
 
 export { TokenBucket, TOKEN_BUCKET_SCRIPT };
+
+// rate-limiter middlewre:
+
+function rateLimitMiddleware(
+  limiter: TokenBucket,
+  fn: (param: Request) => string,
+) {
+  return async function (req: Request, res: Response, next: NextFunction) {
+    const key = fn(req);
+    const { allowed, remaining } = await limiter.allow(key);
+
+    // Add standard rate limit headers
+    res.set("X-RateLimit-Limit", String(limiter.capacity));
+    res.set("X-RateLimit-Remaining", String(Math.floor(remaining)));
+    res.set(
+      "X-RateLimit-Reset",
+      String(Math.floor(Date.now() / 1000 + limiter.refillInterval)),
+    );
+
+    if (!allowed) {
+      res.set("Retry-After", String(Math.ceil(limiter.refillInterval)));
+      res.status(429).json({ error: "Too Many Requests" });
+      return;
+    }
+
+    next();
+  };
+}
