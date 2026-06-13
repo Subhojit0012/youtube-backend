@@ -2,7 +2,12 @@ import { User } from "../db/models/user.model.js";
 import { router, procedure } from "./../utility/context.utility.js";
 import { TRPCError } from "@trpc/server";
 import { string, z } from "zod";
-import { createUser, deleteUser, login, updateUser } from "../service/user.service.js";
+import {
+  createUser,
+  deleteUser,
+  login,
+  updateUser,
+} from "../service/user.service.js";
 import jwt from "jsonwebtoken";
 import { authProcedure } from "./../utility/context.utility.js";
 
