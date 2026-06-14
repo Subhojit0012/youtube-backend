@@ -225,39 +225,23 @@ File: `src/db/connect.db.ts`
 - `subscribedTo` -> `User` (required)
 - `timestamps: true`
 
-## 6. Session and Redis Integration
+## 6. Rate-limiting
 
-File: `src/utility/session.ts`
+File: `src/utility/rateLimiter.utility.ts`
 
-Main pieces:
-
-- `initRedisClient()`
-  - creates Redis client once using env vars
-  - attaches `error` and `connect` listeners
-- `router.use(session(...))`
-  - express-session with RedisStore (`connect-redis`)
-- `GET /:id`
-  - fetches raw Redis value for key `sess:<id>`
-
-Session key helpers:
-
-- `getClientSession(userId)` reads `sess:<userId>`
-- `setSessionClient(userId)` writes `{"userId": ...}` if key absent
-
-Important current-state constraints:
-
-- `redisClient.connect()` is never called.
-- `setSessionClient` is defined but never used.
-- session secret is hardcoded as `"sumit"`.
-- Redis session store is created from `redisClient`, which must be initialized first.
+- `createClient` use to create a redis client
+  - use error event listener to handle connection issues
+- `Lua Script` to implement atomic token bucket rate-limiting
+- `TokenBucket` class to manage rate-limiting state and operations
 
 ## 7. tRPC Context
 
 File: `src/utility/context.utility.ts`
 
-- `createContext` currently returns an empty object (placeholder).
+- `createContext` currently returns an object (`request, response`).
+  - conditionally, it could return `{req, res, token}` if the header contains bearer token for authentication.
 - `router`, `procedure`, `mergeRouters` are exported from initialized `initTRPC`.
-- `createInnerContext` exists but is not used in server flow.
+- `authProcedure` is a protected procedure.
 
 Effectively, live procedures do not currently consume session/user context.
 
