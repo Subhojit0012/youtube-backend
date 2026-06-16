@@ -119,11 +119,22 @@ export const userRouter = router({
 
 /* 
 
-implement the authentication procedure in express router e.g. login, signup, so when the token will be created or updated we can set it to the /trpc middleware so the tRPC Context can get the JWT token, but if the token is not found in the request header in /trpc/* route it will thorw error by the trpc protected-procedure.
+implement the authentication procedure in express router e.g. login, signup, so when the token will be created or updated we can set it to the /trpc middleware header so the tRPC Context can get the JWT token, but if the token is not found in the request header in /trpc/* route it will thorw error by the trpc protected-procedure.
 
 */
 const exRouter = express.Router();
 
-exRouter.post("/login", (req, res) => {
-  // implement login logics
+exRouter.post("/signup", async (req, res) => {
+  const { name, email, password } = req.body;
+  await createUser({ name, email, password });
+});
+
+exRouter.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  const id = await login({ email, password });
+
+  if (!id) return { message: "user not exiest" };
+
+  res.status(200).json({ id: id });
 });
