@@ -30,7 +30,9 @@ export const router = t.router;
 export const procedure = t.procedure;
 export const mergeRouters = t.mergeRouters;
 
-export const authProcedure = procedure.use((opts) => {
+export const { createCallerFactory } = t;
+
+export const authProcedure = t.procedure.use((opts) => {
   const { ctx, next } = opts;
 
   const token = ctx.token ? ctx.token : "";
