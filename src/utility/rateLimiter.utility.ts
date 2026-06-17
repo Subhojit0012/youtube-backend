@@ -11,6 +11,8 @@ client.on("error", (err) => {
   console.error("Redis Client Error", err);
 });
 
+client.connect();
+
 // Lua script for atomic token bucket operations
 const TOKEN_BUCKET_SCRIPT = `
 local key = KEYS[1]
@@ -184,3 +186,5 @@ function rateLimitMiddleware(
     next();
   };
 }
+
+export { rateLimitMiddleware };
