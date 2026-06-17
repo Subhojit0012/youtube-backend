@@ -9,12 +9,15 @@ import {
   createDefaultLogger,
   createRequestLogger,
 } from "./utility/log.utility.js";
+import router from "./router/auth.router.js";
 
 export const app: Express = express();
 
 const logger = createDefaultLogger().child({ service: "trpc-backend" });
 
 app.use(createRequestLogger(logger));
+
+app.use("/auth", router);
 
 // rpc route
 app.use(
@@ -27,17 +30,19 @@ app.use(
 
 // server bootstrap
 (async function () {
-    logger.info("starting server bootstrap");
-    // await initRedisClient();
-    connectDB().then(() =>
+  logger.info("starting server bootstrap");
+  // await initRedisClient();
+  connectDB()
+    .then(() =>
       app.listen(2026, () => {
         logger.info("server running", { port: 2026 });
       }),
-    ).catch((err)=> {
+    )
+    .catch((err) => {
       logger.error("failed to start server", {
-        error: err instanceof Error ? err.message : String(err)
-      })
-    })
+        error: err instanceof Error ? err.message : String(err),
+      });
+    });
 })();
 
 // exit code
