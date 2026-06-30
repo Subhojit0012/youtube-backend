@@ -95,4 +95,3 @@ Recomended Architecture:
 - **Security**: Use SAS tokens or Azure AD for secure access to blobs.
 - **Performance**: Consider using Azure CDN to cache and deliver video content closer to users for better performance.
 - **Scalability**: Use Azure Functions or Container Instances to handle transcoding jobs in parallel, allowing for better scalability as demand increases.
-

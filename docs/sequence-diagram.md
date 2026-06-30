@@ -160,6 +160,44 @@ sequenceDiagram
     PlaylistRouter-->>Client: { message: "Playlist created successfully" }
 ```
 
+## Azure Video Upload And Transcoding Flow
+
+This sequence reflects the storage architecture described in [video-storage.md](/C:/Users/subho/OneDrive/Desktop/project-models/trpc-backend/docs/video-storage.md): raw uploads go to Azure Blob Storage, a queue triggers asynchronous transcoding, FFmpeg generates multiple renditions, and Azure CDN serves the final assets.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant API as Backend API
+    participant Blob as Azure Blob Storage
+    participant Queue as Azure Storage Queue
+    participant Worker as Azure Function / Container Instance
+    participant FFmpeg as FFmpeg
+    participant CDN as Azure CDN
+
+    User->>API: Upload video file + metadata
+    API->>Blob: Store raw video blob
+    Blob-->>API: Raw blob path / URL
+    API->>Queue: Enqueue transcoding job
+    API-->>User: Upload accepted + video reference
+
+    Queue-->>Worker: Deliver transcoding job
+    Worker->>Blob: Download raw video
+    Blob-->>Worker: Raw video file
+    Worker->>FFmpeg: Generate 360p, 480p, 720p, 1080p outputs
+
+    loop For each resolution
+        FFmpeg-->>Worker: Transcoded file
+        Worker->>Blob: Upload transcoded blob
+        Blob-->>Worker: Blob stored
+    end
+
+    User->>CDN: Request video playback
+    CDN->>Blob: Fetch rendition on cache miss
+    Blob-->>CDN: Requested video file
+    CDN-->>User: Stream optimized video
+```
+
 ## Router-to-Service Map
 
 The current repository uses these main execution paths:
