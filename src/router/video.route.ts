@@ -3,9 +3,10 @@ import { router } from "../utility/context.utility.js";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createVideoModel, getVideoById } from "../service/video.service.js";
+import { authProcedure } from "../utility/context.utility.js";
 
 const videoRouter = router({
-  upload: procedure
+  upload: authProcedure
     .input(
       z.object({
         title: z.string(),
