@@ -17,8 +17,6 @@ const logger = createDefaultLogger().child({ service: "trpc-backend" });
 
 app.use(createRequestLogger(logger));
 
-app.use("/auth", router);
-
 // rpc route
 app.use(
   "/trpc",
