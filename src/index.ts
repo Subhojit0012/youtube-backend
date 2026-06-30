@@ -9,7 +9,6 @@ import {
   createDefaultLogger,
   createRequestLogger,
 } from "./utility/log.utility.js";
-import router from "./router/auth.router.js";
 
 export const app: Express = express();
 
