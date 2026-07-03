@@ -80,6 +80,7 @@ Root router file: `src/router/_app.router.ts`
 
 ### 4.2 Mounted HTTP Paths
 
+- `POST /auth/*`: auth endpoint for authentication
 - `POST/GET /trpc/*`: tRPC procedures via `appRouter`
 - `GET /express/test/:id`: session lookup endpoint from `utility/session.ts`
 
