@@ -1,7 +1,6 @@
 import { router, procedure } from "../utility/context.utility.js";
 import z from "zod";
 import { Playlist } from "../db/models/playlist.model.js";
-import { createPlaylist } from "../service/playlist.service.js";
 
 const playListRouter = router({
   createPlaylist: procedure
