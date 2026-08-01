@@ -6,7 +6,11 @@
   "type": "module",
   "scripts": {
     "dev": "node ./dist/index.js --watch",
-    "lint": "prettier ./src/* --write"
+    "lint": "prettier ./src/* --write",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +23,10 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.9.1",
     "@types/qs": "^6.15.1",
+    "@vitest/coverage-v8": "^4.1.10",
+    "mongodb-memory-server": "^11.2.0",
     "prettier": "3.8.1",
+    "vitest": "^4.1.10",
     "zod": "^4.4.3"
   },
   "dependencies": {
