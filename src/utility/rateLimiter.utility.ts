@@ -133,7 +133,7 @@ class TokenBucket {
         ],
       });
     } catch (error) {
-      if (error.message && error.message.includes("NOSCRIPT")) {
+      if (error instanceof Error && error.message.includes("NOSCRIPT")) {
         // Script not in cache, use EVAL and reload
         result = await this.redisClient.eval(TOKEN_BUCKET_SCRIPT, {
           keys: [key],

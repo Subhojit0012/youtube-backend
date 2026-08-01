@@ -1,9 +1,10 @@
-import { router, procedure } from "../utility/context.utility.js";
+import { router } from "../utility/context.utility.js";
+import { authProcedure } from "../utility/context.utility.js";
 import z from "zod";
 import { Playlist } from "../db/models/playlist.model.js";
 
 const playListRouter = router({
-  createPlaylist: procedure
+  createPlaylist: authProcedure
     .input(
       z.object({
         name: z.string().min(2),
@@ -33,7 +34,7 @@ const playListRouter = router({
         : ctx.res?.status(404).json({ message: "Failed" });
     }),
 
-  addVideoToPlayList: procedure
+  addVideoToPlayList: authProcedure
     .input(
       z.object({
         playListId: z.string(),
