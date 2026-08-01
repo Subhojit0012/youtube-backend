@@ -18,10 +18,10 @@ const videoRouter = router({
     .mutation(async ({ input, ctx }) => {
       try {
         const userId =
-          typeof ctx.payload === "object" ? ctx.payload?.id : null;
+          typeof ctx.payload === "object" ? ctx.payload?._id : null;
 
         // create video model and save to database
-        await createVideoModel(input, userId);
+        createVideoModel(input, userId);
 
         return {
           message: "Video uploaded successfully",

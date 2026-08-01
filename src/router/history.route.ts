@@ -2,7 +2,6 @@ import { authProcedure } from "../utility/context.utility.js";
 import { router } from "../utility/context.utility.js";
 import z from "zod";
 import { getHistory, addToHistory } from "../service/history.service.js";
-import { TRPCError } from "@trpc/server";
 
 const historyRouter = router({
   addToHistory: authProcedure
@@ -18,7 +17,7 @@ const historyRouter = router({
           ? (ctx.payload as { id: string }).id
           : undefined;
       if (!userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid token" });
+        throw new Error("UNAUTHORIZED");
       }
       await addToHistory(userId, videoId);
 
@@ -31,7 +30,7 @@ const historyRouter = router({
         ? (ctx.payload as { id: string }).id
         : undefined;
     if (!userId) {
-      throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid token" });
+      throw new Error("UNAUTHORIZED");
     }
 
     const history = await getHistory(userId);

@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import type { JwtPayload } from "jsonwebtoken";
 
 export function encodeToken(userId: string) {
   // 1.
@@ -22,14 +21,10 @@ export function encodeToken(userId: string) {
   return token;
 }
 
-export function decodeToken(token: string): JwtPayload | null {
-  if (token === "") return null;
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-    return typeof decoded === "object" ? decoded : null;
-  } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) return null;
-    throw error;
+export function decodeToken(token: string) {
+  if (token === "") {
+    throw new Error("No token provided");
   }
+  const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+  return decoded ? decoded : null;
 }

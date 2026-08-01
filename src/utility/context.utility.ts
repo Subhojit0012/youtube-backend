@@ -32,7 +32,7 @@ export const mergeRouters = t.mergeRouters;
 
 export const { createCallerFactory } = t;
 
-export const authProcedure: typeof t.procedure = t.procedure.use((opts) => {
+export const authProcedure = t.procedure.use((opts) => {
   const { ctx, next } = opts;
 
   const token = ctx.token ? ctx.token : "";

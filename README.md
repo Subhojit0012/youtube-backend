@@ -58,17 +58,6 @@ To start the server, run the following command:
 
 The server will start on the specified port (default is 5000). You can access the APIs at `http://localhost:5000/api`.
 
-### Running Tests
-
-```bash
-pnpm test
-pnpm typecheck
-```
-
-Service tests mock Mongoose model methods. Router tests call the tRPC `appRouter`
-directly with `createCallerFactory` and use an isolated `mongodb-memory-server`
-instance, so they do not connect to the development database.
-
 ## API Endpoints
 
 ### Authentication
