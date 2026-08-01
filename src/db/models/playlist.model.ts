@@ -63,8 +63,7 @@ export const playlist = new Schema(
     },
     statics: {
       async createPlaylist(name: string, user: Types.ObjectId) {
-        const existingPlaylist = await this.findOne({ name, owner: user });
-        if (existingPlaylist) {
+        if (this.name === name && this.owner.toString() === user.toString()) {
           throw new Error("PLAYLIST ALREADY EXISTS");
         }
         await this.create({
