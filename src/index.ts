@@ -5,10 +5,7 @@ import { connectDB } from "./db/connect.db.js";
 import type { Express } from "express";
 import { appRouter } from "./router/_app.router.js";
 import { createContext } from "./utility/context.utility.js";
-import {
-  createDefaultLogger,
-  createRequestLogger,
-} from "./utility/log.utility.js";
+import { createDefaultLogger, createRequestLogger } from "./utility/log.utility.js";
 
 export const app: Express = express();
 

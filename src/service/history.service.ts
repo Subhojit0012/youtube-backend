@@ -9,10 +9,10 @@ async function historyService(userId: string, videoId: string) {
 
   const video = history?.videoId.find((item) => item.toString() === videoId);
 
-  if(!video){
-    throw new TRPCError({code: "BAD_REQUEST", message: "Invalid input"});
+  if (!video) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid input" });
   }
-};
+}
 
 export async function addToHistory(userId: string, videoId: string) {
   const existingHistory = await History.findOne({ userId });
@@ -28,7 +28,9 @@ export async function addToHistory(userId: string, videoId: string) {
   }
 
   // Check if the video is already in the history
-  const videoIndex = existingHistory.videoId.findIndex((id) => id.toString() === videoId);
+  const videoIndex = existingHistory.videoId.findIndex(
+    (id) => id.toString() === videoId,
+  );
 
   if (videoIndex !== -1) {
     // If video exists, move it to the front (most recent)
@@ -43,7 +45,7 @@ export async function addToHistory(userId: string, videoId: string) {
   await existingHistory.save();
 }
 
-async function getHistory(userId: string){
+async function getHistory(userId: string) {
   const history = await History.findOne({ userId }).populate({
     path: "videoId",
     select: "title thumbnail duration owner",
@@ -60,4 +62,4 @@ async function getHistory(userId: string){
   return history.videoId;
 }
 
-export {historyService, getHistory};
+export { historyService, getHistory };
