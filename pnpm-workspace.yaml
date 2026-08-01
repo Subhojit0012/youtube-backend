@@ -2,7 +2,7 @@ allowBuilds:
   esbuild: false
   unrs-resolver: false
 
-# run pnpm audit --fix=update will
+# pnpm audit --fix=update
 minimumReleaseAgeExclude:
   - brace-expansion@5.0.8
 
