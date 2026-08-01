@@ -1,0 +1,50 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: trpc-backend
+    ports:
+      - "2026:2026"
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/youtube-backend
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: development
+    depends_on:
+      - mongo
+      - redis
+    volumes:
+      - ./src:/app/src
+      - ./tsconfig.json:/app/tsconfig.json
+      - /app/node_modules
+      - /app/dist
+    develop:
+      watch:
+        - path: ./src
+          action: sync
+          target: /app/src
+        - path: ./tsconfig.json
+          action: sync
+          target: /app/tsconfig.json
+
+  mongo:
+    image: mongo:6
+    container_name: mongo-db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: youtube-backend
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mongo_data:
+  redis_data:
