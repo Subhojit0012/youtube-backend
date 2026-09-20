@@ -45,6 +45,7 @@ export async function addToHistory(userId: string, videoId: string) {
   await existingHistory.save();
 }
 
+// TEST: demo function
 async function getHistory(userId: string) {
   const history = await History.findOne({ userId }).populate({
     path: "videoId",
