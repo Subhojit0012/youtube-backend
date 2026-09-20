@@ -15,6 +15,7 @@ interface CreatePlaylistOpts {
 }
 // check if the playlist is exists for the user
 // if exits then add the video to the
+// Limit: 5 playlist per user
 async function createPlaylist(opts: CreatePlaylistOpts) {
   const { input, ctx } = opts;
 
