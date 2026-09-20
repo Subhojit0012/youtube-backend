@@ -51,4 +51,4 @@ async function getHistory(userId: string) {
   return history.videoId;
 }
 
-export { historyService, getHistory };
+export { getHistory };
