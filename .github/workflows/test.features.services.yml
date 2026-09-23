@@ -1,0 +1,5 @@
+# Build test cases on /test path
+# create workflow that can be triggered in action
+# build jobs for seperate test cases. Also use concurrency for running multiple test cases at once.
+# use Github Hosted runner.
+# environment variables.
