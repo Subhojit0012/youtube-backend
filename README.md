@@ -84,6 +84,67 @@ The server will start on the specified port (default is 5000). You can access th
 - `POST /trpc/addToHistory`: Add a video to the user's watch history
 - `GET /trpc/getHistory`: Get the user's watch history
 
+## Repository Tree Structure:
+```repo
+Directory structure:
+└── subhojit0012-youtube-backend/
+    ├── README.md
+    ├── docker-compose.yml
+    ├── Dockerfile
+    ├── document.md
+    ├── package.json
+    ├── pnpm-lock.yaml
+    ├── pnpm-workspace.yaml
+    ├── settings.json
+    ├── todo.md
+    ├── tsconfig.json
+    ├── .dockerignore
+    ├── .env.development
+    ├── .prettierignore
+    ├── .prettierrc
+    ├── docs/
+    │   ├── sequence-diagram.md
+    │   └── video-storage.md
+    ├── src/
+    │   ├── index.ts
+    │   ├── db/
+    │   │   ├── connect.db.ts
+    │   │   └── models/
+    │   │       ├── channel.model.ts
+    │   │       ├── comment.model.ts
+    │   │       ├── history.model.ts
+    │   │       ├── playlist.model.ts
+    │   │       ├── subscribe.model.ts
+    │   │       ├── user.model.ts
+    │   │       └── video.model.ts
+    │   ├── router/
+    │   │   ├── _app.router.ts
+    │   │   ├── history.route.ts
+    │   │   ├── playlist.route.ts
+    │   │   ├── user.route.ts
+    │   │   └── video.route.ts
+    │   ├── service/
+    │   │   ├── history.service.ts
+    │   │   ├── playlist.service.ts
+    │   │   ├── user.service.ts
+    │   │   └── video.service.ts
+    │   └── utility/
+    │       ├── asyncHandler.utility.ts
+    │       ├── context.utility.ts
+    │       ├── error.utility.ts
+    │       ├── log.utility.ts
+    │       ├── rateLimiter.utility.ts
+    │       └── token.utility.ts
+    ├── test/
+    │   ├── history.service.test.ts
+    │   ├── playlist.service.test.ts
+    │   ├── user.service.test.ts
+    │   └── video.service.test.ts
+    └── .github/
+        └── workflows/
+            └── codeql.yml
+```
+
 ## Current Architecture:
 
 ```mermaid
