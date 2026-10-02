@@ -22,6 +22,8 @@ async function createPlaylist(opts: CreatePlaylistOpts) {
   let checkPlaylist = await checkUserPlaylist(ctx.payload?.id);
 
   if (checkPlaylist) {
+    // remove userId implementaion
+    // update the addToPlaylist method
     checkPlaylist.addToPlaylist(input.videoId, ctx.payload?.id);
   }
 
