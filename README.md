@@ -1,250 +1,141 @@
-# YOUTUBE-BACKEND
+# YouTube Backend
 
-This is a backend for a YouTube-like application built using tRPC. It provides APIs for user authentication, video management, and other functionalities required for a video-sharing platform.
+A TypeScript backend for a YouTube-like application. It uses Express to host a
+tRPC API, Mongoose to persist data in MongoDB, and JWTs for authentication.
+The project is an early-stage implementation; see [Current limitations](#current-limitations)
+before relying on unfinished endpoints.
 
 ## Features
 
-- User authentication (sign up, login, logout)
-- Video upload and management
+- User signup and login with JWTs returned in the `Authorization` response header
+- Protected user, video, and watch-history procedures
+- Playlist procedures and Mongoose models for users, videos, channels, comments,
+  playlists, subscriptions, and history
+- Structured request and application logging
 
-## Technologies Used
+## Technology
 
-- tRPC for building type-safe APIs and Context support
-- Mongoose(ORM) for database management
-- JWT for authentication
-- Express.js for handling HTTP requests
+- Node.js and TypeScript
+- Express 5 and tRPC 11
+- MongoDB with Mongoose
+- JSON Web Tokens
+- pnpm
 
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
-- Node.js installed on your machine
-- MongoDB installed and running
+- Node.js (the Docker image uses Node.js 22)
+- pnpm
+- A reachable MongoDB instance
 
-### Installation
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/Subhojit0012/youtube-backend.git
-   ```
-
-2. Navigate to the project directory:
-
-   ```bash
-    cd youtube-backend
-    ```
-
-3. Install dependencies:(use pnpm package manager)
-
-    ```bash
-    pnpm install
-    ```
-
-4. Create an .env file in the root directory and add the following environment variables:
-
-   ```env
-   MONGODB_URI=your_mongodb_connection_string
-   JWT_SECRET=your_jwt_secret_key
-   ```
-
-### Running the Application
-
-To start the server, run the following command:
+### Install
 
 ```bash
-    pnpm start
+git clone https://github.com/Subhojit0012/youtube-backend.git
+cd youtube-backend
+pnpm install
 ```
 
-The server will start on the specified port (default is 5000). You can access the APIs at `http://localhost:5000/api`.
+Create a `.env` file in the project root:
 
-## API Endpoints
-
-### Authentication
-
-- `POST /trpc/signup`: Register a new user
-- `POST /trpc/login`: Log in a user
-- `POST /trpc/logout`: Log out a user
-- `GET /trpc/profile`: Get the authenticated user's information
-- `POST /trpc/update`: Update user information
-- `POST /trpc/delete`: Delete a user account
-
-### Video Management
-
-- `POST /trpc/upload`: Upload a new video
-- `GET /trpc/getVideosById`: Get a video by its ID
-
-### Playlist Management
-
-- `POST /trpc/createPlaylist`: Create a new playlist
-- `POST /trpc/addVideoToPlaylist`: Add a video to a playlist
-
-### History Management
-
-- `POST /trpc/addToHistory`: Add a video to the user's watch history
-- `GET /trpc/getHistory`: Get the user's watch history
-
-## Repository Tree Structure:
-```repo
-Directory structure:
-└── subhojit0012-youtube-backend/
-    ├── README.md
-    ├── docker-compose.yml
-    ├── Dockerfile
-    ├── document.md
-    ├── package.json
-    ├── pnpm-lock.yaml
-    ├── pnpm-workspace.yaml
-    ├── settings.json
-    ├── todo.md
-    ├── tsconfig.json
-    ├── .dockerignore
-    ├── .env.development
-    ├── .prettierignore
-    ├── .prettierrc
-    ├── docs/
-    │   ├── sequence-diagram.md
-    │   └── video-storage.md
-    ├── src/
-    │   ├── index.ts
-    │   ├── db/
-    │   │   ├── connect.db.ts
-    │   │   └── models/
-    │   │       ├── channel.model.ts
-    │   │       ├── comment.model.ts
-    │   │       ├── history.model.ts
-    │   │       ├── playlist.model.ts
-    │   │       ├── subscribe.model.ts
-    │   │       ├── user.model.ts
-    │   │       └── video.model.ts
-    │   ├── router/
-    │   │   ├── _app.router.ts
-    │   │   ├── history.route.ts
-    │   │   ├── playlist.route.ts
-    │   │   ├── user.route.ts
-    │   │   └── video.route.ts
-    │   ├── service/
-    │   │   ├── history.service.ts
-    │   │   ├── playlist.service.ts
-    │   │   ├── user.service.ts
-    │   │   └── video.service.ts
-    │   └── utility/
-    │       ├── asyncHandler.utility.ts
-    │       ├── context.utility.ts
-    │       ├── error.utility.ts
-    │       ├── log.utility.ts
-    │       ├── rateLimiter.utility.ts
-    │       └── token.utility.ts
-    ├── test/
-    │   ├── history.service.test.ts
-    │   ├── playlist.service.test.ts
-    │   ├── user.service.test.ts
-    │   └── video.service.test.ts
-    └── .github/
-        └── workflows/
-            └── codeql.yml
+```env
+CONNECTION_STR=mongodb://localhost:27017/youtube-backend
+JWT_SECRET=replace-with-a-long-random-secret
 ```
 
-## Current Architecture:
+`CONNECTION_STR` is used by the MongoDB connector. `JWT_SECRET` is used to sign
+and verify authentication tokens. Optional logging settings are `LOG_LEVEL`
+(`debug`, `info`, `warn`, or `error`) and `LOG_FORMAT` (`json` for JSON output;
+otherwise logs are formatted as readable text).
 
-```mermaid
-%% Generated by https://gitdiagram.com/subhojit0012/youtube-backend
-flowchart TD
+### Run locally
 
-subgraph group_entry["HTTP and tRPC"]
-  node_server["Express bootstrap<br/>[index.ts]"]
-  node_app_router["Router registry<br/>[_app.router.ts]"]
-end
+Compile the TypeScript source and start the compiled server:
 
-subgraph group_identity["Identity and context"]
-  node_context["tRPC context and auth<br/>[context.utility.ts]"]
-  node_tokens["JWT utilities<br/>[token.utility.ts]"]
-end
-
-subgraph group_features["Product workflows"]
-  node_user_routes["User routes<br/>[user.route.ts]"]
-  node_video_routes["Video routes<br/>[video.route.ts]"]
-  node_playlist_routes["Playlist routes<br/>[playlist.route.ts]"]
-  node_history_routes["History routes<br/>[history.route.ts]"]
-  node_user_service["Account operations<br/>[user.service.ts]"]
-  node_video_service["Video operations<br/>[video.service.ts]"]
-  node_history_service["Watch history<br/>[history.service.ts]"]
-  node_playlist_service["Playlist service"]
-end
-
-subgraph group_data["MongoDB persistence"]
-  node_mongo_connect["MongoDB connection<br/>[connect.db.ts]"]
-  node_user_model[("User model<br/>[user.model.ts]")]
-  node_video_model[("Video model<br/>[video.model.ts]")]
-  node_playlist_model[("Playlist model<br/>[playlist.model.ts]")]
-  node_history_model[("History model<br/>[history.model.ts]")]
-  node_channel_model[("Channel model<br/>[channel.model.ts]")]
-  node_comment_model[("Comment model<br/>[comment.model.ts]")]
-  node_subscribe_model[("Subscription model<br/>[subscribe.model.ts]")]
-end
-
-node_client(("API client"))
-node_mongodb[("MongoDB")]
-
-node_client -->|"sends requests"| node_server
-node_server -->|"mounts tRPC"| node_app_router
-node_server -->|"creates context"| node_context
-node_server -->|"connects database"| node_mongo_connect
-node_app_router -->|"merges routes"| node_user_routes
-node_app_router -->|"merges routes"| node_video_routes
-node_app_router -->|"merges routes"| node_playlist_routes
-node_app_router -->|"merges routes"| node_history_routes
-node_context -->|"decodes tokens"| node_tokens
-node_user_routes -->|"calls operations"| node_user_service
-node_user_routes -->|"reads profile"| node_user_model
-node_video_routes -->|"calls operations"| node_video_service
-node_playlist_routes -->|"reads and writes"| node_playlist_model
-node_history_routes -->|"calls operations"| node_history_service
-node_user_service -->|"reads and writes"| node_user_model
-node_video_service -->|"reads and writes"| node_video_model
-node_history_service -->|"reads and writes"| node_history_model
-node_playlist_model -->|"references videos"| node_video_model
-node_playlist_model -->|"references owner"| node_user_model
-node_user_model -->|"references channel"| node_channel_model
-node_user_model -->|"references history"| node_history_model
-node_user_model -->|"references playlists"| node_playlist_model
-node_user_model -->|"references videos"| node_video_model
-node_user_model -->|"references subscriptions"| node_subscribe_model
-node_mongo_connect -->|"opens connection"| node_mongodb
-
-click node_server "https://github.com/subhojit0012/youtube-backend/blob/main/src/index.ts"
-click node_app_router "https://github.com/subhojit0012/youtube-backend/blob/main/src/router/_app.router.ts"
-click node_user_routes "https://github.com/subhojit0012/youtube-backend/blob/main/src/router/user.route.ts"
-click node_video_routes "https://github.com/subhojit0012/youtube-backend/blob/main/src/router/video.route.ts"
-click node_playlist_routes "https://github.com/subhojit0012/youtube-backend/blob/main/src/router/playlist.route.ts"
-click node_history_routes "https://github.com/subhojit0012/youtube-backend/blob/main/src/router/history.route.ts"
-click node_context "https://github.com/subhojit0012/youtube-backend/blob/main/src/utility/context.utility.ts"
-click node_tokens "https://github.com/subhojit0012/youtube-backend/blob/main/src/utility/token.utility.ts"
-click node_user_service "https://github.com/subhojit0012/youtube-backend/blob/main/src/service/user.service.ts"
-click node_video_service "https://github.com/subhojit0012/youtube-backend/blob/main/src/service/video.service.ts"
-click node_history_service "https://github.com/subhojit0012/youtube-backend/blob/main/src/service/history.service.ts"
-click node_playlist_service "https://github.com/subhojit0012/youtube-backend/blob/main/src/service/playlist.service.ts"
-click node_mongo_connect "https://github.com/subhojit0012/youtube-backend/blob/main/src/db/connect.db.ts"
-click node_user_model "https://github.com/subhojit0012/youtube-backend/blob/main/src/db/models/user.model.ts"
-click node_video_model "https://github.com/subhojit0012/youtube-backend/blob/main/src/db/models/video.model.ts"
-click node_playlist_model "https://github.com/subhojit0012/youtube-backend/blob/main/src/db/models/playlist.model.ts"
-click node_history_model "https://github.com/subhojit0012/youtube-backend/blob/main/src/db/models/history.model.ts"
-click node_channel_model "https://github.com/subhojit0012/youtube-backend/blob/main/src/db/models/channel.model.ts"
-click node_comment_model "https://github.com/subhojit0012/youtube-backend/blob/main/src/db/models/comment.model.ts"
-click node_subscribe_model "https://github.com/subhojit0012/youtube-backend/blob/main/src/db/models/subscribe.model.ts"
-
-classDef toneNeutral fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a
-classDef toneBlue fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#172554
-classDef toneAmber fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#78350f
-classDef toneMint fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
-classDef toneRose fill:#ffe4e6,stroke:#e11d48,stroke-width:1.5px,color:#881337
-classDef toneIndigo fill:#e0e7ff,stroke:#4f46e5,stroke-width:1.5px,color:#312e81
-classDef toneTeal fill:#ccfbf1,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
-class node_server,node_app_router,node_client toneBlue
-class node_context,node_tokens,node_mongodb toneAmber
-class node_user_routes,node_video_routes,node_playlist_routes,node_history_routes,node_user_service,node_video_service,node_history_service,node_playlist_service toneMint
-class node_mongo_connect,node_user_model,node_video_model,node_playlist_model,node_history_model,node_channel_model,node_comment_model,node_subscribe_model toneRose
+```bash
+pnpm exec tsc
+pnpm dev
 ```
-## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+Alternatively, run the TypeScript entry point directly:
+
+```bash
+pnpm exec tsx ./src/index.ts
+```
+
+The server connects to MongoDB and listens on port `2026`. Its tRPC endpoint is
+`http://localhost:2026/trpc`.
+
+> **Docker Compose note:** `docker-compose.yml` currently supplies `MONGODB_URI`,
+> while the application reads `CONNECTION_STR`. Set `CONNECTION_STR` in the
+> Compose app environment before starting the stack, or the database connection
+> will not use the configured Compose MongoDB service.
+
+## API procedures
+
+All procedures are exposed through tRPC at `/trpc`. Mutations and queries use
+the transport and HTTP method conventions of the tRPC client.
+
+| Procedure            | Type     | Input                                          | Authentication                                                                             |
+| -------------------- | -------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `signup`             | Mutation | `{ name, email, password }`                    | No                                                                                         |
+| `login`              | Mutation | `{ email, password }`                          | No                                                                                         |
+| `deleteUser`         | Mutation | User ID string                                 | JWT required                                                                               |
+| `update`             | Mutation | `{ name, email, password }`                    | JWT required                                                                               |
+| `profile`            | Query    | String input (currently ignored)               | JWT required                                                                               |
+| `upload`             | Mutation | `{ title, description, videoFile, thumbnail }` | JWT required                                                                               |
+| `getVideoById`       | Query    | Video ID string                                | No                                                                                         |
+| `createPlaylist`     | Mutation | `{ name }`                                     | Intended to require a JWT; currently fails because its procedure does not decode the token |
+| `addVideoToPlayList` | Mutation | `{ playListId, videoId }`                      | Intended to require a JWT; currently fails because its procedure does not decode the token |
+| `addToHistory`       | Mutation | `{ videoId }`                                  | JWT required                                                                               |
+| `getHistory`         | Query    | No input                                       | JWT required                                                                               |
+
+Send authenticated requests with an `Authorization: Bearer <token>` header.
+Signup and login put the signed token in the response `Authorization` header.
+The exact output shape and current behavior are documented in
+[document.md](./document.md).
+
+## Project layout
+
+```text
+src/
+  index.ts                 Express and tRPC server bootstrap
+  db/
+    connect.db.ts          MongoDB connection
+    models/                Mongoose schemas
+  router/                  tRPC procedure definitions and root router
+  service/                 User, video, playlist, and history operations
+  utility/                 Context, JWT, logging, errors, and rate limiter
+test/                      Service tests
+docs/                      Model, sequence, and video-storage documentation
+```
+
+## Scripts and tests
+
+`pnpm dev` runs `dist/index.js` with Node's watch mode. Compile first with
+`pnpm exec tsc`; the package does not currently define a build or test script.
+Tests are in `test/`.
+
+## Current limitations
+
+- The playlist procedures use the regular tRPC procedure but expect a decoded
+  JWT payload, so they reject requests in the current context setup.
+- Video upload starts the database operation without awaiting it, then returns
+  a success response; a failed write may therefore happen after the response.
+- The `profile` procedure requires an input string but looks up the user from
+  the JWT instead of using that input.
+- The `deleteUser` procedure checks that a token payload exists but does not
+  verify that the requested user ID belongs to that token.
+- Redis rate limiting is not wired into the server bootstrap. The rate-limiter
+  utility expects `REDIS_URL` if it is imported and used.
+- Passwords are stored and compared as plain text in the current user service.
+- The configured Compose MongoDB variable does not match the variable read by
+  the application; see the Docker Compose note above.
+
+## Additional documentation
+
+- [Full implementation notes](./document.md)
+- [Model relationships](./docs/model-relations.md)
+- [Sequence diagrams](./docs/sequence-diagram.md)
+- [Video storage notes](./docs/video-storage.md)

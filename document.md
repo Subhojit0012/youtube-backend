@@ -1,334 +1,268 @@
 # tRPC Backend Documentation
 
-This document explains the full `trpc-backend` codebase as implemented currently.
+This document describes the current implementation in the repository. It
+distinguishes wired behavior from models, utilities, and procedures that are
+present but incomplete.
 
-## 1. Project Overview
+## 1. Overview
 
-`trpc-backend` is a TypeScript Node.js backend that combines:
+The project is a TypeScript Node.js service built with:
 
-- `express` as the HTTP server
-- `@trpc/server` for RPC endpoints
-- `mongoose` for MongoDB models
-- `redis` + `express-session` + `connect-redis` for session storage
-- a custom structured logger for request and application logs
+- Express for the HTTP server
+- tRPC for the API and procedure types
+- Mongoose for MongoDB persistence
+- JSON Web Tokens for request authentication
+- A custom logger for request and application logs
 
-The project currently exposes user-focused tRPC procedures and foundational models for a video platform domain (users, videos, channels, playlists, comments, likes, subscriptions, history, and sessions).
+The MongoDB models cover users, videos, channels, comments, playlists,
+subscriptions, and watch history. The running root router merges user, playlist,
+video, and history routers.
 
-## 2. Runtime Entry and Request Flow
+## 2. Startup and request flow
 
-Main entrypoint: `src/index.ts`
+The entry point is `src/index.ts`.
 
-Startup sequence:
+1. `dotenv/config` loads environment variables.
+2. Express is created and the request-logging middleware is installed.
+3. The tRPC middleware is mounted at `/trpc` with `appRouter` and
+   `createContext`.
+4. `connectDB()` connects to MongoDB using `CONNECTION_STR`.
+5. After a successful connection, Express listens on port `2026`.
 
-1. Load environment variables via `dotenv/config`.
-2. Create Express app instance.
-3. Configure parsers under `/express`:
-   - `express.urlencoded({ extended: true })`
-   - `express.json()`
-4. Attach request logging middleware globally.
-5. Mount session test router at `/express/test`.
-6. Mount tRPC middleware at `/trpc` with `appRouter` and `createContext`.
-7. Initialize Redis client (`initRedisClient()`).
-8. Connect MongoDB (`connectDB()`).
-9. Start server on port `2026`.
+The Redis initialization call is commented out in the entry point. There is no
+session middleware or separate `/auth` or `/express` route mounted by the
+current server.
 
-Important note: the application always listens on port `2026` (hardcoded), not via an env var.
-
-## 3. High-Level Structure
+## 3. Source layout
 
 ```text
-trpc-backend/
-  src/
-    index.ts
-    db/
-      connect.db.ts
-      models/
-        channel.model.ts
-        comment.model.ts
-        history.model.ts
-        like.model.ts
-        playlist.model.ts
-        session.model.ts
-        subscribe.model.ts
-        user.model.ts
-        video.model.ts
-    router/
-      _app.router.ts
-      auth.route.ts
-      history.route.ts
-      playlist.route.ts
-      user.route.ts
-      video.route.ts
-    utility/
-      asyncHandler.utility.ts
-      context.utility.ts
-      error.utility.ts
-      log.utility.ts
-      session.ts
-    test/
-      test.ts
+src/
+  index.ts
+  db/
+    connect.db.ts
+    models/
+      channel.model.ts
+      comment.model.ts
+      history.model.ts
+      playlist.model.ts
+      subscribe.model.ts
+      user.model.ts
+      video.model.ts
+  router/
+    _app.router.ts
+    history.route.ts
+    playlist.route.ts
+    user.route.ts
+    video.route.ts
+  service/
+    history.service.ts
+    playlist.service.ts
+    user.service.ts
+    video.service.ts
+  utility/
+    asyncHandler.utility.ts
+    context.utility.ts
+    error.utility.ts
+    log.utility.ts
+    rateLimiter.utility.ts
+    token.utility.ts
+test/
+  history.service.test.ts
+  playlist.service.test.ts
+  user.service.test.ts
+  video.service.test.ts
 ```
 
-## 4. API Surface
+## 4. tRPC API
 
-### 4.1 tRPC Root Router
+`src/router/_app.router.ts` merges all four routers. The procedure names below
+are therefore available below `/trpc`.
 
-Root router file: `src/router/_app.router.ts`
-
-- `appRouter` is currently composed only from `userRouter`.
-- `AppRouter` type is exported for client type inference.
-
-### 4.2 Mounted HTTP Paths
-
-- `POST /auth/*`: auth endpoint for authentication
-- `POST/GET /trpc/*`: tRPC procedures via `appRouter`
-- `GET /express/test/:id`: session lookup endpoint from `utility/session.ts`
-
-### 4.3 User Procedures (`src/router/user.route.ts`)
-
-All procedures are defined with Zod validation.
-
-1. `signup` (mutation)
-
-- Input:
-  - `name: string`
-  - `email: string`
-  - `password: string`
-- Behavior:
-  - validates fields
-  - creates a `User` record
-  - creates a `Session` record with `userId`
-- Returns:
-  - `{ ctx: user }`
-
-2. `login` (mutation)
-
-- Input:
-  - `email: string`
-  - `password: string`
-- Behavior:
-  - checks for matching user by email/password
-- Returns:
-  - `{ message: "Login successful" }`
+### User procedures
 
-3. `update` (mutation)
+| Procedure    | Type     | Input                                               | Current behavior                                                                                                                                                              |
+| ------------ | -------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `signup`     | Mutation | `{ name: string, email: string, password: string }` | Creates a user and sets a signed JWT in the response `Authorization` header. It returns no procedure result.                                                                  |
+| `login`      | Mutation | `{ email: string, password: string }`               | Finds a user by matching email and plain-text password, sets a JWT response header, and returns `{ message: "Login successful" }`.                                            |
+| `deleteUser` | Mutation | User ID string                                      | Requires `authProcedure` and deletes the supplied ID. It does not compare the supplied ID with the authenticated user's ID and returns no procedure result.                   |
+| `update`     | Mutation | `{ name: string, email: string, password: string }` | Requires `authProcedure` and calls the update service. The route schema requires all three fields, while the service updates by email; the route returns no procedure result. |
+| `profile`    | Query    | String                                              | Requires `authProcedure`; the input is checked for non-empty content but the lookup uses the ID from the token. Returns `{ ctx: user }`.                                      |
 
-- Input:
-  - optional `name`, `email`, `password`
-- Behavior:
-  - if `name` and `email`, updates user name by email
-  - if `password` and `email`, updates password by email
-- Returns:
-  - `{ ctx: updatedUser }` where `updatedUser` is Mongo update result
+The signup and login token is signed with `JWT_SECRET` and expires after one day.
+The current user service stores and checks passwords without hashing.
 
-4. `getUserById` (query)
+### Video procedures
 
-- Input:
-  - `string` (user id)
-- Behavior:
-  - finds user by `_id`
-- Returns:
-  - `{ ctx: user }`
+| Procedure      | Type     | Input                                          | Current behavior                                                                                                                                                                                                                             |
+| -------------- | -------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `upload`       | Mutation | `{ title, description, videoFile, thumbnail }` | Requires `authProcedure`, starts creating a video document, and returns `{ message: "Video uploaded successfully" }`. The service call is not awaited, and the route reads `_id` from a token payload that is created with an `id` property. |
+| `getVideoById` | Query    | Video ID string                                | Public query that fetches a video by MongoDB ID. The result can be `null` when no video matches.                                                                                                                                             |
 
-5. `param` (query)
+The `videoFile` and `thumbnail` values are strings. The current service stores
+their values in MongoDB; Azure Blob Storage and video transcoding are not
+implemented in the server.
 
-- Input:
-  - `string`
-- Behavior:
-  - echoes the input
-- Returns:
-  - `{ param: input }`
+### Playlist procedures
 
-## 5. Database Layer
+| Procedure            | Type     | Input                                     | Current behavior                                                                                        |
+| -------------------- | -------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `createPlaylist`     | Mutation | `{ name: string }`                        | Attempts to read the owner ID from `ctx.payload`, then creates a playlist.                              |
+| `addVideoToPlayList` | Mutation | `{ playListId: string, videoId: string }` | Attempts to read the owner ID from `ctx.payload`, checks the playlist owner, then appends the video ID. |
 
-### 5.1 Mongo Connection
+Both routes use `procedure`, not `authProcedure`. `createContext` does not
+decode the token into `ctx.payload`, so these procedures currently throw
+`UNAUTHORIZED` for normal requests rather than operating as authenticated
+playlist routes.
 
-File: `src/db/connect.db.ts`
+### History procedures
 
-- Uses `mongoose.connect(process.env.CONNECTION_STR as string)`.
-- Throws connection error to caller.
+| Procedure      | Type     | Input                 | Current behavior                                                                                                                           |
+| -------------- | -------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `addToHistory` | Mutation | `{ videoId: string }` | Requires `authProcedure`, adds the video to the user's history, and returns a message. Repeated videos are moved to the front.             |
+| `getHistory`   | Query    | None                  | Requires `authProcedure` and returns `{ history }`, with populated video fields when a history record exists and an empty array otherwise. |
 
-### 5.2 Mongoose Models
+## 5. Authentication and tRPC context
 
-1. `User`
+`src/utility/context.utility.ts` creates a context containing the Express
+request and response. If the request has an `Authorization` header, it extracts
+the second space-delimited value as `token`.
 
-- fields:
-  - `name` (required)
-  - `email` (required)
-  - `password` (required)
-  - `isAuthenticated` (default `false`)
-  - `profileImg`, `bannerImg`
-  - references:
-    - `channel` -> `Channel`
-    - `subscribs[]` -> `Subscribe`
-    - `history[]` -> `History`
-    - `playlist[]` -> `Playlist`
-    - `videos[]` -> `Video`
-- `timestamps: true`
+`authProcedure` passes that token to `decodeToken` and adds the verified JWT
+payload as `ctx.payload`. Requests using this procedure must send:
 
-2. `Video`
+```http
+Authorization: Bearer <token>
+```
 
-- nested `meta` object:
-  - `likes` count
-  - `comments`:
-    - `count`
-    - `enabled`
-    - `userComments[]` -> `Comment`
-  - `views`:
-    - `count`
-    - `viewers[]` -> `User`
-- `timestamps: true`
+The token utilities use `JWT_SECRET`. There is no session-backed authentication
+in the current request flow. `decodeToken` calls `jwt.verify`; missing or
+invalid tokens do not become an unauthenticated `null` result.
 
-3. `Channel`
+## 6. MongoDB models
 
-- `name`, `description`, `owner` (required)
-- arrays:
-  - `subscribers[]` -> `User`
-  - `videos[]` -> `Video`
-  - `playlists[]` -> `Playlist`
-- `timestamps: true`
+All schemas use Mongoose timestamps unless otherwise noted. References are
+MongoDB ObjectIds configured with Mongoose `ref`; they are not database
+foreign-key constraints.
 
-4. `Comment`
+### User
 
-- `videoId` -> `Video` (required)
-- `userId` -> `User` (required)
-- `content` (required)
-- `timestamps: true`
+- Required: `name`, `email`, `password`
+- `isAuthenticated` defaults to `false`
+- Optional: `profileImg`, `bannerImg`
+- Optional reference: `channel` to `Channel`
+- `subscribs` is an array of `Channel` references (field spelling as implemented)
+- `history` is an optional `History` reference
+- `playlist` is an array of `Playlist` references
 
-5. `Like`
+### Video
 
-- `userId` -> `User` (required)
-- `videoId` -> `Video` (required)
-- `timestamps: true`
+- Required: `title`, `videoFile`, `thumbnail`
+- Optional: `description`
+- `meta.likes` defaults to `0`
+- `meta.comments` contains a count, an enabled flag, and `Comment` references
+- `meta.views` contains a count and `User` references
+- Optional `owner` reference to `User`
 
-6. `History`
+### Channel
 
-- `videoId` -> `Video` (required)
-- `userId` -> `User` (required)
-- `timestamps: true`
+- Required: `name`, `description`, and `owner` (`User` reference)
+- `subscribers` contains `Subscribe` references
+- `videos` contains `Video` references
+- `playlists` contains `Playlist` references
 
-7. `Playlist`
+### Comment
 
-- `name` (required)
-- `contents[]` -> `Video`
-- `timestamps: true`
-
-8. `Session` (Mongo model)
-
-- `userId` -> `User` (required)
-- `createdAt` default `Date.now`, TTL `expires: "7d"`
-- `updatedAt` default `Date.now`
-- instance method `touch()` updates `updatedAt`
-
-9. `Subscribe`
-
-- `subscriber` -> `User` (required)
-- `subscribedTo` -> `User` (required)
-- `timestamps: true`
-
-## 6. Rate-limiting
-
-File: `src/utility/rateLimiter.utility.ts`
-
-- `createClient` use to create a redis client
-  - use error event listener to handle connection issues
-- `Lua Script` to implement atomic token bucket rate-limiting
-- `TokenBucket` class to manage rate-limiting state and operations
-
-## 7. tRPC Context
-
-File: `src/utility/context.utility.ts`
-
-- `createContext` currently returns an object (`request, response`).
-  - conditionally, it could return `{req, res, token}` if the header contains bearer token for authentication.
-- `router`, `procedure`, `mergeRouters` are exported from initialized `initTRPC`.
-- `authProcedure` is a protected procedure.
-
-Effectively, live procedures do not currently consume session/user context.
-
-## 8. Logging System
-
-File: `src/utility/log.utility.ts`
-
-Features:
-
-- log levels: `debug`, `info`, `warn`, `error`
-- pluggable formatter:
-  - pretty text formatter (default)
-  - JSON formatter when `LOG_FORMAT=json`
-- min log level from `LOG_LEVEL` env var
-- child logger support with default metadata
-- request middleware logs:
-  - method, path, status code
-  - latency (ms)
-  - client IP
-  - user-agent
-
-Used in `src/index.ts`:
-
-- app logger child includes `{ service: "trpc-backend" }`
-- request logger middleware applied to all routes
-- startup / failure / exit events logged
-
-## 9. Other Utility Files
-
-1. `asyncHandler.utility.ts`
-
-- wraps a promise and catches errors
-- currently unused in routing flow
-
-2. `error.utility.ts`
-
-- creates a sample `TRPCError` and maps it to HTTP status
-- currently not integrated into API error handling
-
-3. `src/test/test.ts`
-
-- helper to build Redis-style key names (`bites:<...>`)
-
-## 10. Environment Variables
-
-Based on current code usage:
-
-- `CONNECTION_STR` (MongoDB connection URI)
-- `REDIS_CLIENT_NAME`
-- `REDIS_CLIENT_PASSWORD`
-- `REDIS_HOST`
-- `REDIS_PORT`
-- `LOG_LEVEL` (optional: `debug|info|warn|error`)
-- `LOG_FORMAT` (optional: set `json` for JSON logs; otherwise pretty logs)
-
-## 11. Scripts and Build Notes
-
-`package.json` scripts:
-
-- `dev`: `node ./dist/index.js --watch`
-
-Current implications:
-
-- Source runs from `dist/`, so TypeScript must be compiled first.
-- No `build` script is currently defined in `package.json`.
-
-## 12. Current Gaps / In-Progress Areas
-
-These items are visible directly in code:
-
-- `auth.route.ts` contains middleware scaffold but is not exported/used.
-- `history.route.ts`, `playlist.route.ts`, `video.route.ts` are empty.
-- `_app.router.ts` only merges `userRouter`.
-- login checks plaintext password (no hashing).
-- signup computes `existingUser` but does not use it.
-- `createContext` does not attach request/session data.
-- Redis client lifecycle is incomplete without explicit `.connect()`.
-
-## 13. Minimal Local Run Checklist
-
-1. Install dependencies.
-2. Ensure MongoDB and Redis are reachable.
-3. Set required env vars listed above.
-4. Compile TypeScript to `dist/`.
-5. Start server with `npm run dev`.
-
-## 14. Summary
-
-The codebase provides a functional initial user tRPC API with persistent Mongo models and a custom logging stack. Core platform domains are modeled, but many production-critical features (auth enforcement, password security, additional routers, robust session lifecycle, and context-driven authorization) are scaffolded and not fully wired yet.
+- Required `videoId` array of `Video` references
+- Required `userId` array of `User` references
+- Required `content`
+
+The schema uses arrays for the author and video references, not single
+references.
+
+### History
+
+- Required `userId` reference to `User`
+- `videoId` array of `Video` references
+
+### Playlist
+
+- Required `name` and `owner` (`User` reference)
+- `contents` is an array of `Video` references
+- Schema methods/statics for adding a video and creating playlists are present
+  in addition to the route-level operations.
+
+### Subscribe
+
+- Required `subscriber` reference to `User`
+- Required `subscribedTo` reference to `Channel`
+- `count` defaults to `0`
+
+There are no `Like` or `Session` models in the current `src/db/models`
+directory.
+
+## 7. Services and utilities
+
+### Services
+
+- `user.service.ts` creates, finds, updates, and deletes users. It compares
+  plain-text passwords.
+- `video.service.ts` creates and fetches video documents. It also contains
+  unfinished or unused video operations.
+- `history.service.ts` stores one history document per user and moves a
+  repeated video to the front of its `videoId` array.
+- `playlist.service.ts` contains a separate playlist workflow and is not the
+  implementation used by the current playlist router.
+
+### Logging
+
+`log.utility.ts` provides `debug`, `info`, `warn`, and `error` levels, child
+loggers, and readable or JSON formatting. The request middleware logs the HTTP
+method, path, status, latency, client IP, and user agent. `LOG_LEVEL` defaults
+to `info`; `LOG_FORMAT=json` selects JSON output.
+
+### Rate limiting
+
+`rateLimiter.utility.ts` contains a Redis-backed token-bucket implementation
+and Express middleware. It expects `REDIS_URL`, but it is not imported by the
+server entry point or applied to the current routes. Redis is therefore not
+required by the current server bootstrap.
+
+`asyncHandler.utility.ts` and `error.utility.ts` are also not part of the
+current route flow.
+
+## 8. Configuration and commands
+
+| Variable         | Required by                             | Purpose                                                   |
+| ---------------- | --------------------------------------- | --------------------------------------------------------- |
+| `CONNECTION_STR` | Server startup                          | MongoDB connection URI                                    |
+| `JWT_SECRET`     | Signup, login, and protected procedures | JWT signing and verification                              |
+| `LOG_LEVEL`      | Optional                                | Minimum logger level: `debug`, `info`, `warn`, or `error` |
+| `LOG_FORMAT`     | Optional                                | Set to `json` to emit JSON logs                           |
+| `REDIS_URL`      | Rate-limiter utility only               | Redis connection URL if that utility is imported and used |
+
+The package scripts currently define only:
+
+- `pnpm dev`: runs the compiled `dist/index.js` with Node watch mode; compile
+  first using `pnpm exec tsc`.
+- No `build` or `test` script is defined.
+
+The Docker image runs `pnpm exec tsx ./src/index.ts`. The Compose app currently
+sets `MONGODB_URI`, but the application reads `CONNECTION_STR`; align this
+environment variable before expecting the Compose application to connect to
+its MongoDB service.
+
+## 9. Current implementation gaps
+
+- Passwords are stored and compared as plain text.
+- `upload` does not await video creation and reads `payload._id`, although the
+  issued JWT contains `id`.
+- Playlist procedures do not use `authProcedure`, so the context does not
+  provide the payload they require.
+- `deleteUser` does not restrict deletion to the authenticated user's ID.
+- The profile input is required but ignored for the lookup.
+- Redis rate limiting exists as a utility but is not connected to the server.
+- Video storage and transcoding are described separately in
+  `docs/video-storage.md`; the current video service only stores string fields
+  in MongoDB.
+- The Compose MongoDB environment variable currently differs from the name
+  consumed by the application.
