@@ -22,11 +22,11 @@ export const user = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Channel",
     },
-    subscribs: [{ type: Schema.Types.ObjectId, ref: "Subscribe" }],
-    history: [{ type: Schema.Types.ObjectId, ref: "History" }],
+    subscribs: [{ type: Schema.Types.ObjectId, ref: "Channel" }], // change reference to channel
+    history: { type: Schema.Types.ObjectId, ref: "History" },
     playlist: [{ type: Schema.Types.ObjectId, ref: "Playlist" }],
-    videos: [{ type: Schema.Types.ObjectId, ref: "Video" }],
   },
+
   { timestamps: true },
 );
 

@@ -19,7 +19,7 @@ export const channel = new Schema(
     subscribers: [
       {
         type: Schema.Types.ObjectId,
-        ref: "User",
+        ref: "Subscribe",
       },
     ],
     videos: [
